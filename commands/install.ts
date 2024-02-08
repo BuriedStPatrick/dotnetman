@@ -43,12 +43,12 @@ const getDirectories = async (source: string) =>
     .filter(dirent => dirent.isDirectory())
     .map(dirent => dirent.name)
 
-export const installCommand: CommandModule = {
-  command: 'install',
+const installDotnetCommand: CommandModule = {
+  command: 'dotnet',
   describe: 'Install dotnet version',
-  aliases: ['i'],
+  aliases: ['d'],
   builder: (command: CommandBuilder) => command
-    .example('dotnetman install'),
+    .example('dotnetman install dotnet'),
   handler: async (argv: Argv) => {
     if (!(await hasInstallScript())) {
       await fetchInstallScript()
@@ -69,6 +69,41 @@ export const installCommand: CommandModule = {
       throw new Error('Non-zero exit code occurred.')
     }
   }
+}
+
+const installPowershellCommand: CommandModule = {
+  command: 'pwsh',
+  describe: 'Install powershell',
+  aliases: ['p', 'powershell'],
+  builder: (command: CommandBuilder) => command
+    .example('dotnetman install pwsh'),
+  handler: async (argv: Argv) => {
+    // TODO: Check if `dotnet` is in PATH, error out if not
+
+    const proc = Bun.spawn(['dotnet', 'tool', 'install', '--global', 'powershell'], {
+      stdout: "inherit",
+      stderr: "inherit",
+      env: {
+        ...process.env,
+        DOTNET_ROOT: getDotnetRootPath()
+      }
+    })
+
+    const exitCode = await proc.exited
+
+    if (exitCode !== 0) {
+      throw new Error('Non-zero exit code occurred.')
+    }
+  }
+}
+
+export const installCommand: CommandModule = {
+  command: 'install',
+  describe: 'Manage installations',
+  aliases: ['i'],
+  builder: (command: CommandBuilder) => command
+    .command(installDotnetCommand)
+    .command(installPowershellCommand)
 }
 
 export const sdkCommand: CommandModule = {
