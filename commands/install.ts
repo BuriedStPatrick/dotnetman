@@ -35,7 +35,7 @@ export const installCommand: CommandModule = {
   describe: 'Install dotnet version',
   aliases: ['i'],
   builder: (command: CommandBuilder) => command
-    .example('dotnetvm install'),
+    .example('dotnetman install'),
   handler: async (argv: Argv) => {
     if (!(await hasInstallScript())) {
       await fetchInstallScript()

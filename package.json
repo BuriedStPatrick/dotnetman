@@ -1,5 +1,5 @@
 {
-  "name": "dotnetvm",
+  "name": "dotnetman",
   "module": "index.ts",
   "type": "module",
   "devDependencies": {
