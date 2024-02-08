@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
-    - uses: actions/setup-node@master
+    - uses: antongolub/action-setup-bun@v1
 
     - name: Build
       working-directory: ./
