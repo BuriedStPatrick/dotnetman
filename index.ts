@@ -1,5 +1,6 @@
 import yargs from 'yargs/yargs'
-import { installCommand, sdkCommand, updateCommand } from './commands/install.ts'
+import { installCommand, sdkCommand } from './commands/install.ts'
+import { updateCommand } from './commands/update.ts'
 
 yargs(process.argv.splice(2))
   .scriptName('dotnetman')
