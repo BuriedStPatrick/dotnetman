@@ -1,5 +1,7 @@
 import yargs, { ArgumentsCamelCase, Argv, CommandBuilder, CommandModule } from 'yargs'
 import path from 'path'
+import { readdir } from 'node:fs/promises';
+import { getListPreference, outputList } from '../util/lists';
 
 const getDownloadDirectory = (): string => {
   if (!process.env['HOME']) {
@@ -30,6 +32,17 @@ const getDotnetRootPath = () => {
   return path.join(process.env['HOME'], '.dotnet')
 }
 
+const getInstalledSdks = async (): Promise<string[]> => {
+  const sdkPath = path.join(getDotnetRootPath(), 'sdk')
+
+  return await getDirectories(sdkPath)
+}
+
+const getDirectories = async (source: string) =>
+  (await readdir(source, { withFileTypes: true }))
+    .filter(dirent => dirent.isDirectory())
+    .map(dirent => dirent.name)
+
 export const installCommand: CommandModule = {
   command: 'install',
   describe: 'Install dotnet version',
@@ -55,5 +68,23 @@ export const installCommand: CommandModule = {
     if (exitCode !== 0) {
       throw new Error('Non-zero exit code occurred.')
     }
+  }
+}
+
+export const sdkCommand: CommandModule = {
+  command: 'sdk',
+  describe: 'Manage SDKs',
+  aliases: ['s'],
+  builder: (command: CommandBuilder) => command
+    .command(getSdkCommand)
+}
+
+export const getSdkCommand: CommandModule = {
+  command: 'list',
+  describe: 'Get installed SDKs',
+  aliases: ['ls', 'get'],
+  handler: async (argv: Argv) => {
+    const installedSdks = await getInstalledSdks()
+    outputList(installedSdks, getListPreference(argv))
   }
 }
