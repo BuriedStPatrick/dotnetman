@@ -49,5 +49,11 @@ export const installCommand: CommandModule = {
         DOTNET_ROOT: getDotnetRootPath()
       }
     })
+
+    const exitCode = await proc.exited
+
+    if (exitCode !== 0) {
+      throw new Error('Non-zero exit code occurred.')
+    }
   }
 }
