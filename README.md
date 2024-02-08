@@ -8,6 +8,32 @@ This installs all your .NET binaries in one location under `~/.dotnet`. No more 
 
 ## Usage
 
+You just need to run the binary any way you like. Here I've just put it somewhere within my `PATH`.
+
+### Installing
+
+Install .NET:
+
 ```bash
-dotnetman install --lts
+dotnetman install dotnet
+```
+
+Install PowerShell (assumes you have installed .NET already):
+
+```bash
+dotnetman install pwsh
+```
+
+### Updating
+
+Update .NET (NOT SUPPORTED YET):
+
+```bash
+dotnetman update dotnet
+```
+
+Update PowerShell:
+
+```bash
+dotnetman update pwsh
 ```
