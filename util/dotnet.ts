@@ -1,5 +1,6 @@
 import path from 'path'
 import { readdir } from 'node:fs/promises';
+import { getDotnetLifeCycles, type DotnetLifeCycle } from './endoflife';
 
 export const getDownloadDirectory = (): string => {
   if (!Bun.env.HOME) {
@@ -30,39 +31,45 @@ export const getDotnetRootPath = () => {
   return path.join(Bun.env.HOME, '.dotnet')
 }
 
-export type DotnetSdkVersion = {
+export type DotnetVersion = {
   major: number
   minor: number
-  patch: number
+  patch: number,
+  lifeCycle?: DotnetLifeCycle
 }
+
+export type DotnetSdkVersion = {
+  path: string
+} & DotnetVersion
 
 export type DotnetRuntimeVersion = {
-  major: number
-  minor: number
-  patch: number
   type: 'net' | 'aspnetcore' | 'netcoreapp'
-}
+} & DotnetVersion
 
-export const getInstalledSdkVersions = async (): Promise<DotnetSdkVersion[]> => {
+export const getInstalledSdkVersions = async (withLifeCycle: boolean = true): Promise<DotnetSdkVersion[]> => {
   const sdkPath = path.join(getDotnetRootPath(), 'sdk')
 
   const dirs = await getDirectories(sdkPath)
 
-  return dirs.map(dir => {
+  const lifeCycles = withLifeCycle
+    ? (await getDotnetLifeCycles())
+    : null
+
+  return await Promise.all(dirs.map(async dir => {
     const split = dir.name
       .split('.')
-      .map(n => parseInt(n))
 
     return {
-      major: split[0],
-      minor: split[1],
-      patch: split[2],
-      path: dir.path
+      major: parseInt(split[0]),
+      minor: parseInt(split[1]),
+      patch: parseInt(split[2]),
+      path: dir.path,
+      lifeCycle: lifeCycles?.find(lc => lc.cycle.split('.')[0] === split[0])
     } as DotnetSdkVersion
-  })
+  }))
 }
 
-export const getInstalledRuntimeVersions = async (): Promise<DotnetSdkVersion[]> => {
+export const getInstalledRuntimeVersions = async (withLifeCycle: boolean = true): Promise<DotnetRuntimeVersion[]> => {
   const netcoreRuntimePath = path.join(getDotnetRootPath(), 'shared', 'Microsoft.NETCore.App')
   const aspnetCoreAllPath = path.join(getDotnetRootPath(), 'shared', 'Microsoft.AspNetCore.All') // old ASPNET Core 2.1 stuff
   const aspnetCoreAppPath = path.join(getDotnetRootPath(), 'shared', 'Microsoft.AspNetCore.App')
@@ -71,21 +78,25 @@ export const getInstalledRuntimeVersions = async (): Promise<DotnetSdkVersion[]>
     .concat((await getDirectories(aspnetCoreAllPath)))
     .concat((await getDirectories(aspnetCoreAppPath)))
 
-  return dirs.map(dir => {
+  const lifeCycles = withLifeCycle
+    ? (await getDotnetLifeCycles())
+    : null
+
+  return await Promise.all(dirs.map(async dir => {
     const versionSplit = dir.name
       .split('.')
-      .map(n => parseInt(n))
 
     return {
-      major: versionSplit[0],
-      minor: versionSplit[1],
-      patch: versionSplit[2],
+      major: parseInt(versionSplit[0]),
+      minor: parseInt(versionSplit[1]),
+      patch: parseInt(versionSplit[2]),
       type: dir.path.startsWith(netcoreRuntimePath) ? 'net'
         : dir.path.startsWith(aspnetCoreAppPath) ? 'aspnetcore'
         : dir.path.startsWith(aspnetCoreAllPath) ? 'netcoreapp' : null,
-      path: dir.path
+      path: dir.path,
+      lifeCycle: lifeCycles?.find(lc => lc.cycle.split('.')[0] === versionSplit[0])
     } as DotnetRuntimeVersion
-  })
+  }))
 }
 
 const getDirectories = async (source: string): Promise<Directory[]> =>

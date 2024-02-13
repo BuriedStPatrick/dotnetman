@@ -8,12 +8,17 @@ export const listCommand: CommandModule = {
   describe: 'List .NET software',
   aliases: ['ls', 'get'],
   builder: (command: CommandBuilder) => command
+    .option('with-lifecycle', {
+      type: 'boolean'
+    })
     .command(getSdkCommand)
     .command(getRuntimeCommand),
   handler: async (argv: Argv) => {
     console.log(`${chalk.bold.bgBlue.white('Installed sdks')}`)
     const installedSdks = await getInstalledSdkVersions()
-    outputList(installedSdks, getListPreference(argv))
+    outputList(
+      installedSdks,
+      getListPreference(argv))
 
     console.log(`${chalk.bold.bgBlue.white('Installed runtimes')}`)
     const installedRuntimes = await getInstalledRuntimeVersions()
