@@ -1,35 +1,51 @@
 import yargs, { ArgumentsCamelCase, Argv, CommandBuilder, CommandModule } from 'yargs'
-import { fetchInstallScript, getDotnetRootPath, getInstalledSdks, hasInstallScript, syncSdk, updateSdk } from '../util/dotnet'
+import { getChannelFromVersion, getInstalledRuntimeVersions, getInstalledSdkVersions, syncRuntimeChannel, syncSdkChannel } from '../util/dotnet'
 
 export const syncCommand: CommandModule = {
-  command: 'sync',
+  command: 'sync [target]',
   describe: 'Synchronize .NET software',
   aliases: ['s'],
   builder: (command: CommandBuilder) => command
-    .command(syncSdkCommand)
-}
-
-const syncSdkCommand: CommandModule = {
-  command: 'sdk',
-  describe: 'Synchronize .NET SDKs',
-  builder: (command: CommandBuilder) => command
+    .positional('target', {
+      type: 'string',
+      describe: 'The target to sync.',
+      default: 'all',
+      choices: [
+        'all',
+        'sdk',
+        'runtime'
+      ]
+    })
     .option('channel', {
       type: 'string',
-      default: 'LTS',
-      describe: 'Channel to sync'
+      describe: 'Channel to sync.'
     }),
   handler: async (argv: Argv) => {
-    if (!(await hasInstallScript())) {
-      await fetchInstallScript()
-    }
+    // TODO: this is very stupid, but kind of amusing
+    const targets = argv.target === 'all'
+      ? ['sdk', 'runtime']
+      : [argv.target]
 
-    const sdkMajorVersions = (await getInstalledSdks())
-      // distinct by major version
-      .filter((value, index, self) =>
-        index === self.findIndex(x => x.major === value.major))
+    for (const target of targets) {
+      if (target === 'sdk') {
+        const channels: string[] = argv.channel
+          ? Array.isArray(argv.channel) ? argv.channel : [argv.channel]
+          : (await getInstalledSdkVersions()).map(version => getChannelFromVersion(version))
 
-    for (const sdk of sdkMajorVersions) {
-      await syncSdk(sdk)
+        for (const channel of channels) {
+          await syncSdkChannel(channel)
+        }
+      }
+
+      if (target === 'runtime') {
+        const channels = argv.channel
+          ? Array.isArray(argv.channel) ? argv.channel : [argv.channel]
+          : (await getInstalledRuntimeVersions()).map(version => getChannelFromVersion(version))
+
+        for (const channel of channels) {
+          await syncRuntimeChannel(channel)
+        }
+      }
     }
   }
 }
