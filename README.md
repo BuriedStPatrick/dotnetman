@@ -50,7 +50,7 @@ Here's what that file can look like:
 List installed .NET SDKs (that `.NET MAN` knows about):
 
 ```bash
-dotnetman sdk list
+dotnetman list sdk
 ```
 
 > .NET MAN is an opinionated fella'. He looks at ~/.dotnet/sdk and doesn't care what `dotnet --list-sdks` says. If you're seeing a discrepancy, then you might have another .NET installation spooking around on your system. I'd get that cleaned up or .NET MAN gets angry.
