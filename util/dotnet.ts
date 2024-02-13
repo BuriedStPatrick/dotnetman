@@ -2,11 +2,11 @@ import path from 'path'
 import { readdir } from 'node:fs/promises';
 
 export const getDownloadDirectory = (): string => {
-  if (!process.env['HOME']) {
+  if (!Bun.env.HOME) {
     throw new Error(`ENV var 'HOME' not defined`)
   }
   
-  return path.join(process.env['HOME'], 'Downloads')
+  return path.join(Bun.env.HOME, 'Downloads')
 }
 
 export const hasInstallScript = async (): Promise<boolean> => {
@@ -23,11 +23,11 @@ export const getInstallScriptPath = () => {
 }
 
 export const getDotnetRootPath = () => {
-  if (!process.env['HOME']) {
+  if (!Bun.env.HOME) {
     throw new Error(`ENV var 'HOME' not defined`)
   }
 
-  return path.join(process.env['HOME'], '.dotnet')
+  return path.join(Bun.env.HOME, '.dotnet')
 }
 
 export type DotnetSdk = {
@@ -76,7 +76,7 @@ export const syncSdk = async (sdk: DotnetSdk) => {
     stdout: 'inherit',
     stderr: 'inherit',
     env: {
-      ...process.env,
+      ...Bun.env,
       DOTNET_ROOT: getDotnetRootPath()
     }
   })
@@ -99,7 +99,7 @@ export const syncRuntime = async (runtime: DotnetRuntime) => {
     stdout: 'inherit',
     stderr: 'inherit',
     env: {
-      ...process.env,
+      ...Bun.env,
       DOTNET_ROOT: getDotnetRootPath()
     }
   })

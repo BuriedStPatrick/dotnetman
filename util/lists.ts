@@ -6,7 +6,7 @@ export const getListPreference = (argv: Argv): ListPreference => {
     return argv.output as ListPreference
   }
 
-  return process.env['LIST_PREFERENCE'] as ListPreference ?? 'tsv'
+  return Bun.env['LIST_PREFERENCE'] as ListPreference ?? 'tsv'
 }
 
 export const outputList = (objects: any[], listPreference: ListPreference = 'tsv') => {
