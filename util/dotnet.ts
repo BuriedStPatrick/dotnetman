@@ -26,17 +26,87 @@ export const getDotnetRootPath = () => {
   if (!process.env['HOME']) {
     throw new Error(`ENV var 'HOME' not defined`)
   }
-  
+
   return path.join(process.env['HOME'], '.dotnet')
 }
 
-export const getInstalledSdks = async (): Promise<string[]> => {
+export type DotnetSdk = {
+  major: number
+  minor: number
+  patch: number
+}
+
+export type DotnetRuntime = {
+  major: number
+  minor: number
+  patch: number
+}
+
+export const getInstalledSdks = async (): Promise<DotnetSdk[]> => {
   const sdkPath = path.join(getDotnetRootPath(), 'sdk')
-  
-  return await getDirectories(sdkPath)
+
+  const dirs = await getDirectories(sdkPath)
+
+  return dirs.map(dir => {
+    const split = dir
+      .split('.')
+      .map(n => parseInt(n))
+
+    return {
+      major: split[0],
+      minor: split[1],
+      patch: split[2]
+    } as DotnetSdk
+  })
 }
 
 const getDirectories = async (source: string) =>
   (await readdir(source, { withFileTypes: true }))
     .filter(dirent => dirent.isDirectory())
     .map(dirent => dirent.name)
+
+
+export const syncSdk = async (sdk: DotnetSdk) => {
+  const proc = Bun.spawn([
+    'bash',
+    getInstallScriptPath(),
+    '--channel',
+    `${sdk.major}.${sdk.minor}`
+  ], {
+    stdout: 'inherit',
+    stderr: 'inherit',
+    env: {
+      ...process.env,
+      DOTNET_ROOT: getDotnetRootPath()
+    }
+  })
+
+  const exitCode = await proc.exited
+
+  if (exitCode !== 0) {
+    throw new Error('Non-zero exit code occurred.')
+  }
+}
+
+export const syncRuntime = async (runtime: DotnetRuntime) => {
+  const proc = Bun.spawn([
+    'bash',
+    getInstallScriptPath(),
+    '--channel',
+    `${runtime.major}.${runtime.minor}`,
+    '--runtime'
+  ], {
+    stdout: 'inherit',
+    stderr: 'inherit',
+    env: {
+      ...process.env,
+      DOTNET_ROOT: getDotnetRootPath()
+    }
+  })
+
+  const exitCode = await proc.exited
+
+  if (exitCode !== 0) {
+    throw new Error('Non-zero exit code occurred.')
+  }
+}

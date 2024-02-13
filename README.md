@@ -4,39 +4,46 @@ Anyone who has fought with installing more than 1 SDK and runtime version of .NE
 
 This repo is an optionated wrapper CLI for managing .NET installations. It uses the `dotnet-install.sh` script behind-the-scenes to run installations.
 
-This installs all your .NET binaries in one location under `~/.dotnet`. No more guessing games. Inspired by the likes of Node Version Manager.
+This installs all your .NET binaries in one location under `~/.dotnet`. No more guessing games.
 
 ## Usage
 
-You just need to run the binary any way you like. Here I've just put it somewhere within my `PATH`.
-
-### Installing
-
-Install .NET:
+Run the binary any way you like. Here I've put it somewhere within my `PATH`. Dotnetman uses the `sync` command to install and update your local SDKs and runtimes:
 
 ```bash
-dotnetman install dotnet
+# NOTE: All SDK sync commands include the runtime as well:
+dotnetman sync sdk                  # Update all installed SDKs
+dotnetman sync sdk --channel 8.0      # Install/Update .NET 8 SDK
+
+# In case you don't need the SDK:
+dotnetman sync runtime              # Update all installed runtimes
+dotnetman sync runtime --channel 8  # Install/Update .NET 8 SDK
 ```
 
-Install PowerShell (assumes you have installed .NET already):
+You can also throw a sync config JSON file after it:
 
 ```bash
-dotnetman install pwsh
+# Sync SDKs and runtimes based on config
+dotnetman sync --file ./config.json
 ```
 
-### Updating
+Here's what that file can look like:
 
-Update .NET (NOT SUPPORTED YET):
-
-```bash
-dotnetman update dotnet
+```json
+{
+    "version": "0.1.0",
+    "sdk": [
+        8.0,
+        6.0,
+        3.1
+    ],
+    "runtime": [
+        2.1
+    ]
+}
 ```
 
-Update PowerShell:
-
-```bash
-dotnetman update pwsh
-```
+> You can leave out any section here except the `version` property. This file format will probably change in the future, but for now we're keeping it simple.
 
 ### Manage SDKs
 
@@ -46,4 +53,4 @@ List installed .NET SDKs (that `.NET MAN` knows about):
 dotnetman sdk list
 ```
 
-> .NET MAN is an opinionated fella'. He only looks at ~/.dotnet/sdk and doesn't care what `dotnet --list-sdks` says. If you're seeing a discrepancy, then you might have another .NET installation spooking around on your system. I'd get that cleaned up or .NET MAN gets angry.
+> .NET MAN is an opinionated fella'. He looks at ~/.dotnet/sdk and doesn't care what `dotnet --list-sdks` says. If you're seeing a discrepancy, then you might have another .NET installation spooking around on your system. I'd get that cleaned up or .NET MAN gets angry.
