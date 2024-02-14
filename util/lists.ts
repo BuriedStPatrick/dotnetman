@@ -28,6 +28,10 @@ const outputTsv = (data: any, properties?: string[]) => {
       data = [data];
   }
 
+  if (data.length < 1) {
+    return
+  }
+
   properties = properties
       ? properties
       : Object.keys(data[0]);

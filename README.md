@@ -33,12 +33,11 @@ Here's what that file can look like:
 {
     "version": "0.1.0",
     "sdk": [
-        8.0,
-        6.0,
-        3.1
+        "8.0",
+        "6.0"
     ],
     "runtime": [
-        2.1
+        "3.1"
     ]
 }
 ```

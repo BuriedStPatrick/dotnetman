@@ -1,5 +1,6 @@
 import yargs, { ArgumentsCamelCase, Argv, CommandBuilder, CommandModule } from 'yargs'
-import { getChannelFromVersion, getInstalledRuntimeVersions, getInstalledSdkVersions, syncRuntimeChannel, syncSdkChannel } from '../util/dotnet'
+import { getChannelFromVersion, getInstalledRuntimeVersions, getInstalledSdkVersions, syncRuntimeChannel, syncSdkChannel, type DotnetVersionConfig, syncVersionConfig } from '../util/dotnet'
+import { exists } from 'node:fs'
 
 export const syncCommand: CommandModule = {
   command: 'sync [target]',
@@ -16,11 +17,29 @@ export const syncCommand: CommandModule = {
         'runtime'
       ]
     })
+    .option('file', {
+      type: 'string',
+      describe: 'Specify a JSON configuration file to sync from. Mutually exclusive with all other arguments',
+      require: false
+    })
     .option('channel', {
       type: 'string',
       describe: 'Channel to sync.'
     }),
   handler: async (argv: Argv) => {
+    if (argv.file) {
+      const file = Bun.file(argv.file)
+      if (!(await file.exists())) {
+        throw new Error(`File not found at: ${file}`)
+      }
+
+      const config = (await file.json()) as DotnetVersionConfig
+
+      await syncVersionConfig(config)
+
+      return
+    }
+
     // TODO: this is very stupid, but kind of amusing
     const targets = argv.target === 'all'
       ? ['sdk', 'runtime']

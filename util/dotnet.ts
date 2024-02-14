@@ -43,7 +43,7 @@ export type DotnetSdkVersion = {
 } & DotnetVersion
 
 export type DotnetRuntimeVersion = {
-  type: 'net' | 'aspnetcore' | 'netcoreapp'
+  type: 'net' | 'aspnetcore' | 'netcoreapp' | 'windowsdesktop'
 } & DotnetVersion
 
 export const getInstalledSdkVersions = async (withLifeCycle: boolean = true): Promise<DotnetSdkVersion[]> => {
@@ -70,13 +70,15 @@ export const getInstalledSdkVersions = async (withLifeCycle: boolean = true): Pr
 }
 
 export const getInstalledRuntimeVersions = async (withLifeCycle: boolean = true): Promise<DotnetRuntimeVersion[]> => {
-  const netcoreRuntimePath = path.join(getDotnetRootPath(), 'shared', 'Microsoft.NETCore.App')
+  const netcoreRuntimePath = path.join(getDotnetRootPath(), 'shared', 'Microsoft.NETCore.App') // dotnet
   const aspnetCoreAllPath = path.join(getDotnetRootPath(), 'shared', 'Microsoft.AspNetCore.All') // old ASPNET Core 2.1 stuff
   const aspnetCoreAppPath = path.join(getDotnetRootPath(), 'shared', 'Microsoft.AspNetCore.App')
+  const windowsDesktopAppPath = path.join(getDotnetRootPath(), 'shared', 'Microsoft.WindowsDesktop.App') // windowsdesktop
 
   const dirs = (await getDirectories(netcoreRuntimePath))
     .concat((await getDirectories(aspnetCoreAllPath)))
     .concat((await getDirectories(aspnetCoreAppPath)))
+    .concat((await getDirectories(windowsDesktopAppPath)))
 
   const lifeCycles = withLifeCycle
     ? (await getDotnetLifeCycles())
@@ -90,9 +92,12 @@ export const getInstalledRuntimeVersions = async (withLifeCycle: boolean = true)
       major: parseInt(versionSplit[0]),
       minor: parseInt(versionSplit[1]),
       patch: parseInt(versionSplit[2]),
-      type: dir.path.startsWith(netcoreRuntimePath) ? 'net'
+      type:
+          dir.path.startsWith(netcoreRuntimePath) ? 'net'
         : dir.path.startsWith(aspnetCoreAppPath) ? 'aspnetcore'
-        : dir.path.startsWith(aspnetCoreAllPath) ? 'netcoreapp' : null,
+        : dir.path.startsWith(aspnetCoreAllPath) ? 'netcoreapp'
+        : dir.path.startsWith(windowsDesktopAppPath) ? 'windowsdesktop'
+        : null,
       path: dir.path,
       lifeCycle: lifeCycles?.find(lc => lc.cycle.split('.')[0] === versionSplit[0])
     } as DotnetRuntimeVersion
@@ -100,12 +105,18 @@ export const getInstalledRuntimeVersions = async (withLifeCycle: boolean = true)
 }
 
 const getDirectories = async (source: string): Promise<Directory[]> =>
-  (await readdir(source, { withFileTypes: true }))
-    .filter(dirent => dirent.isDirectory())
-    .map(dirent => ({
-      name: dirent.name,
-      path: path.resolve(source, dirent.name)
-    }) as Directory)
+  {
+    if (!(await (Bun.file(source).exists()))) {
+      return []
+    }
+
+    return (await readdir(source, { withFileTypes: true }))
+      .filter(dirent => dirent.isDirectory())
+      .map(dirent => ({
+        name: dirent.name,
+        path: path.resolve(source, dirent.name)
+      }) as Directory);
+  }
 
 type Directory = {
   name: string
@@ -173,4 +184,45 @@ export const syncRuntimeChannel = async (channel: string) => {
   if (exitCode !== 0) {
     throw new Error('Non-zero exit code occurred.')
   }
+}
+
+export const syncVersionConfig = async (config: DotnetVersionConfig) => {
+  if (!config.version) {
+    throw new Error(`Error in config. Version is required.`)
+  }
+
+  // Really dumb way to check the config for bad version, but works for now
+  const supportedVersion = [0, 1]
+  const versionSplit = config.version
+    .split('.')
+    .map(v => parseInt(v))
+
+  if (versionSplit[0] > supportedVersion[0]) {
+    throw new Error(`Not supported major version: ${versionSplit[0]}. Supported: ${supportedVersion[0]}`)
+  }
+
+  if (versionSplit[1] !== supportedVersion[1]) {
+    throw new Error(`Not supported minor version: ${versionSplit[1]}. Supported: ${supportedVersion[1]}`)
+  }
+
+  if (config.sdk) {
+    for (const sdkChannel of config.sdk) {
+      await syncSdkChannel(sdkChannel)
+    }
+  }
+
+  if (config.runtime) {
+    for (const runtimeChannel of config.runtime) {
+      await syncRuntimeChannel(runtimeChannel)
+    }
+  }
+}
+
+export type DotnetSdkVersionConfig = string
+export type DotnetRuntimeVersionConfig = string
+
+export type DotnetVersionConfig = {
+  version: string
+  sdk?: DotnetSdkVersionConfig[]
+  runtime?: DotnetRuntimeVersionConfig[]
 }
