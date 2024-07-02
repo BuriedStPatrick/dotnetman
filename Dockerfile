@@ -2,6 +2,7 @@ ARG DOCKER_USER=bun
 
 FROM oven/bun:1 as base
 ARG DOCKER_USER
+RUN apt-get update && apt-get install -y wget
 RUN mkdir -p /tmp && chown ${DOCKER_USER} -R /tmp
 RUN mkdir -p /build && chown ${DOCKER_USER} -R /build
 RUN mkdir -p /src && chown ${DOCKER_USER} -R /src
