@@ -1,5 +1,6 @@
 import path from 'path'
 import { readdir } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import { getDotnetLifeCycles, type DotnetLifeCycle } from './endoflife';
 
 export const getDownloadDirectory = (): string => {
@@ -105,18 +106,18 @@ export const getInstalledRuntimeVersions = async (withLifeCycle: boolean = true)
 }
 
 const getDirectories = async (source: string): Promise<Directory[]> =>
-  {
-    if (!(await (Bun.file(source).exists()))) {
-      return []
-    }
-
-    return (await readdir(source, { withFileTypes: true }))
-      .filter(dirent => dirent.isDirectory())
-      .map(dirent => ({
-        name: dirent.name,
-        path: path.resolve(source, dirent.name)
-      }) as Directory);
+{
+  if (!(await existsSync(source))) {
+    return []
   }
+
+  return (await readdir(source, { withFileTypes: true }))
+    .filter(dirent => dirent.isDirectory())
+    .map(dirent => ({
+      name: dirent.name,
+      path: path.resolve(source, dirent.name)
+    }) as Directory);
+}
 
 type Directory = {
   name: string
