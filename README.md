@@ -79,6 +79,9 @@ docker run \
     -v ${DOTNET_ROOT}:/home/bun/.dotnet \
     -u $(id -u):bun \
     dotnetman <dotnet-man-args-here>
+
+# Make your life easier with an alias:
+alias dotnetman="docker run -v ${DOTNET_ROOT}:/home/bun/.dotnet -u $(id -u):bun dotnetman"
 ```
 
 This binds your host system's `DOTNET_ROOT` to the container's `DOTNET_ROOT` location as well as your user to the `bun`-user that runs inside the container.
