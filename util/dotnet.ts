@@ -170,7 +170,10 @@ export const syncRuntimeChannel = async (channel: string) => {
     getInstallScriptPath(),
     '--channel',
     channel,
-    '--runtime'
+    '--runtime',
+    'dotnet',
+    '--runtime',
+    'aspnetcore'
   ], {
     stdout: 'inherit',
     stderr: 'inherit',
