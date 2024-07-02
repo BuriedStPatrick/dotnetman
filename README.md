@@ -53,3 +53,32 @@ dotnetman list sdk
 ```
 
 > .NET MAN is an opinionated fella'. He looks at ~/.dotnet/sdk and doesn't care what `dotnet --list-sdks` says. If you're seeing a discrepancy, then you might have another .NET installation spooking around on your system. I'd get that cleaned up or .NET MAN gets angry.
+
+## Build
+
+With bun:
+
+```bash
+# Install dependencies
+bun install
+
+# Run build
+bun run build
+```
+
+This builds the binary to `./bin/dotnetman`.
+
+With Docker:
+
+```bash
+# Build
+docker build . --tag dotnetman
+
+# Run with:
+docker run \
+    -v ${DOTNET_ROOT}:/home/bun/.dotnet \
+    -u $(id -u):bun \
+    dotnetman <dotnet-man-args-here>
+```
+
+This binds your host system's `DOTNET_ROOT` to the container's `DOTNET_ROOT` location as well as your user to the `bun`-user that runs inside the container.
