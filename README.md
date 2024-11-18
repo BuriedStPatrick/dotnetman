@@ -6,6 +6,21 @@ This repo is an optionated wrapper CLI for managing .NET installations. It uses 
 
 This installs all your .NET binaries in one location under `~/.dotnet`. No more guessing games.
 
+## Pre-requisites
+
+Make sure you've set the following system-wide environment variables:
+
+```bash
+# /etc/profile.d/dotnet.env
+export DOTNET_ROOT=${HOME}/.dotnet
+export PATH=${PATH}:${HOME}/.dotnet
+export PATH=${PATH}:/${HOME}/.dotnet/tools/
+```
+
+This should ensure you have system-wide paths for all your .NET shenanigans like binaries and tools.
+
+> I also recommend settings `DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1` because of reasons.
+
 ## Usage
 
 Run the binary any way you like. Here I've put it somewhere within my `PATH`. Dotnetman uses the `sync` command to install and update your local SDKs and runtimes:
