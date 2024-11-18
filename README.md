@@ -42,6 +42,21 @@ Here's what that file can look like:
 }
 ```
 
+### With Docker
+
+This repository also builds a docker image and pushes it to Docker hub if you don't want to download the binary manually. You'll need to map your current user into the running image so we don't mess up file permissions and of course mount the desired install directory, indicated by the `DOTNET_ROOT` variable here:
+
+```bash
+## Run a command directly off the image
+docker run \
+    -v ${DOTNET_ROOT}:/home/bun/.dotnet \
+    -u $(id -u):bun \
+    buriedstpatrick/dotnetman:v0.0.1-alpha17 <dotnet-man-args-here>
+
+## Optionally, make your life easier with an alias in your shell:
+alias dotnetman="docker run -v ${DOTNET_ROOT}:/home/bun/.dotnet -u $(id -u):bun buriedstpatrick/dotnetman:v0.0.1-alpha17"
+```
+
 > You can leave out any section here except the `version` property. This file format will probably change in the future, but for now we're keeping it simple.
 
 ### Manage SDKs
