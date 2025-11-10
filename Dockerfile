@@ -11,7 +11,7 @@ USER ${DOCKER_USER}
 FROM base as source
 ARG DOCKER_USER
 WORKDIR /src
-COPY package.json bun.lockb .
+COPY package.json bun.lockb ./
 RUN bun install \
   --frozen-lockfile \
   --production
