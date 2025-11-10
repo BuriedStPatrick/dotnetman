@@ -60,7 +60,7 @@ const outputTsv = (data: any, properties?: string[]) => {
       let line = '';
       for (let i = 0; i < lineValues.length; i++) {
           // if is last, then don't add padEnd
-          if (i < lineValues.length) {
+          if (i < lineValues.length - 1) {
               line += lineValues[i] ? lineValues[i].padEnd(longestValues[i] + 1) : '';
           } else {
               line += lineValues[i];
