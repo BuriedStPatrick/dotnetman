@@ -32,7 +32,7 @@ const outputTsv = (data: any, properties?: string[]) => {
     return
   }
 
-  properties = properties
+ properties = properties
       ? properties
       : Object.keys(data[0]);
 
@@ -44,10 +44,11 @@ const outputTsv = (data: any, properties?: string[]) => {
   for (const item of data) {
       const lineValues = [];
       for (const propIndex in properties) {
-          const value = `${item[properties[propIndex]]}`;
+          const value = item[properties[propIndex]];
+          const stringValue = `${value}`;
 
-          if (longestValues[propIndex] < value.length) {
-              longestValues[propIndex] = value.length;
+          if (longestValues[propIndex] < stringValue.length) {
+              longestValues[propIndex] = stringValue.length;
           }
 
           lineValues.push(value);
@@ -59,12 +60,22 @@ const outputTsv = (data: any, properties?: string[]) => {
   lines.forEach(lineValues => {
       let line = '';
       for (let i = 0; i < lineValues.length; i++) {
-          // if is last, then don't add padEnd
-          if (i < lineValues.length) {
-              line += lineValues[i] ? lineValues[i].padEnd(longestValues[i] + 1) : '';
-          } else {
-              line += lineValues[i];
-          }
+        if (lineValues[i] === undefined) {
+          line += '';
+          continue;
+        }
+        
+        // if is last, then don't add padEnd
+        if (i < lineValues.length - 1) {
+            line += `${lineValues[i]}`.padEnd(longestValues[i] + 1);
+        } else {
+            if (typeof lineValues[i] === 'string') {
+              line += lineValues[i]; // header row
+            } 
+            else {
+              line += lineValues[i].lts ? 'LTS' : 'STS';
+            }
+        }
       }
 
       console.log(line);
