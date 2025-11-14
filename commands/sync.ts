@@ -1,12 +1,17 @@
-import yargs, { ArgumentsCamelCase, Argv, CommandBuilder, CommandModule } from 'yargs'
+import type { Arguments, Argv, CommandModule } from 'yargs'
 import { getChannelFromVersion, getInstalledRuntimeVersions, getInstalledSdkVersions, syncRuntimeChannel, syncSdkChannel, type DotnetVersionConfig, syncVersionConfig } from '../util/dotnet'
-import { exists } from 'node:fs'
+
+export type SyncCommandArgs = {
+  target?: 'all' | 'sdk' | 'runtime'
+  file?: string
+}
+  & Arguments
 
 export const syncCommand: CommandModule = {
   command: 'sync [target]',
   describe: 'Synchronize .NET software',
   aliases: ['s'],
-  builder: (command: CommandBuilder) => command
+  builder: (command: Argv<{}>) => command
     .positional('target', {
       type: 'string',
       describe: 'The target to sync.',
@@ -26,7 +31,7 @@ export const syncCommand: CommandModule = {
       type: 'string',
       describe: 'Channel to sync.'
     }),
-  handler: async (argv: Argv) => {
+  handler: async (argv: SyncCommandArgs) => {
     if (argv.file) {
       const file = Bun.file(argv.file)
       if (!(await file.exists())) {
