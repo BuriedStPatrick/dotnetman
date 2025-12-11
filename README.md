@@ -19,8 +19,6 @@ export PATH=${PATH}:/${HOME}/.dotnet/tools/
 
 This should ensure you have system-wide paths for all your .NET shenanigans like binaries and tools.
 
-> I also recommend settings `DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1` because of reasons.
-
 ## Usage
 
 Run the binary any way you like. Here I've put it somewhere within my `PATH`. Dotnetman uses the `sync` command to install and update your local SDKs and runtimes:
