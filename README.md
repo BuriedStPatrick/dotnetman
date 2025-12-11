@@ -14,7 +14,7 @@ Make sure you've set the following system-wide environment variables:
 # /etc/profile.d/dotnet.env
 export DOTNET_ROOT=${HOME}/.dotnet
 export PATH=${PATH}:${HOME}/.dotnet
-export PATH=${PATH}:/${HOME}/.dotnet/tools/
+export PATH=${PATH}:${HOME}/.dotnet/tools/
 ```
 
 This should ensure you have system-wide paths for all your .NET shenanigans like binaries and tools.
