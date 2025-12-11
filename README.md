@@ -67,7 +67,7 @@ docker run \
     buriedstpatrick/dotnetman:v0.0.1-alpha17 <dotnet-man-args-here>
 
 ## Optionally, make your life easier with an alias in your shell:
-alias dotnetman="docker run -v ${DOTNET_ROOT}:/home/bun/.dotnet -u $(id -u):bun buriedstpatrick/dotnetman:v0.0.1-alpha17"
+alias dotnetman="docker run -v ${DOTNET_ROOT}:/home/bun/.dotnet -u $(id -u):bun buriedstpatrick/dotnetman:v0.0.1-alpha19"
 ```
 
 > You can leave out any section here except the `version` property. This file format will probably change in the future, but for now we're keeping it simple.
